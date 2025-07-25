@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare AI Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        .container { max-width: 500px; margin: 40px auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; }
+        .chat-box { height: 250px; overflow-y: auto; border: 1px solid #ddd; padding: 12px; margin-bottom: 16px; background: #fafafa; border-radius: 4px; }
+        .user { color: #007bff; margin-bottom: 8px; }
+        .bot { color: #28a745; margin-bottom: 8px; }
+        label { display: block; margin-top: 12px; }
+        input, textarea { width: 100%; padding: 8px; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; }
+        button { margin-top: 16px; width: 100%; padding: 10px; background: #007bff; color: #fff; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Healthcare AI Chatbot</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <form id="chatForm">
+            <label for="symptoms">Symptoms (comma separated):</label>
+            <input type="text" id="symptoms" name="symptoms" required placeholder="e.g. cough, fever">
+            <label for="medicines">Medicines (comma separated, optional):</label>
+            <input type="text" id="medicines" name="medicines" placeholder="e.g. paracetamol">
+            <button type="submit">Send</button>
+        </form>
+    </div>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const chatForm = document.getElementById('chatForm');
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = sender;
+            div.textContent = (sender === 'user' ? 'You: ' : 'Bot: ') + text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const symptoms = document.getElementById('symptoms').value.split(',').map(s => s.trim());
+            const medicines = document.getElementById('medicines').value.split(',').map(m => m.trim()).filter(m => m);
+            appendMessage('user', `Symptoms: ${symptoms.join(', ')} | Medicines: ${medicines.join(', ')}`);
+            chatForm.reset();
+            try {
+                const res = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symptoms, medicines })
+                });
+                const data = await res.json();
+                appendMessage('bot', data.message);
+            } catch (err) {
+                appendMessage('bot', 'Error connecting to server.');
+            }
+        };
+    </script>
+</body>
+</html> 
